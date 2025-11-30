@@ -11,6 +11,12 @@
 class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	var $moduleCall = false;
+
+	function __construct() {
+		parent::__construct();
+		$this->exposeMethod('exportCSVForScatter');
+	}
+
 	public function requiresPermission(\Vtiger_Request $request) {
 //		$permissions = parent::requiresPermission($request);
 		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
@@ -26,7 +32,12 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 	 * @param Vtiger_Request $request
 	 */
 	function process(Vtiger_Request $request) {
-		$this->ExportData($request);
+		$mode = $request->getMode();
+		if(!empty($mode)) {
+			$this->invokeExposedMethod($mode, $request);
+		} else {
+			$this->ExportData($request);
+		}
 	}
 
 	private $moduleInstance;
@@ -457,5 +468,47 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
 	public function moduleFieldInstances($moduleName) {
 		return $this->moduleInstance->getFields();
+	}
+
+	function exportCSVForScatter(Vtiger_Request $request) {
+		$moduleName = $request->get('source_module');
+		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
+
+		$this->moduleInstance = $moduleModel;
+		$this->moduleFieldInstances = $this->moduleFieldInstances($moduleName);
+		$this->focus = CRMEntity::getInstance($moduleName);
+
+		$entries = $this->getEntriesForScatter($moduleModel);
+		if (empty($entries)) return ;
+		$header = array_keys($entries[0]);
+
+		$today = date('YmdHHis');
+		$translatedModuleName = vtranslate($moduleName, $moduleName);
+		$fileName = "{$translatedModuleName}_scatter_{$today}.csv";
+		$this->output($request, $header, $entries, $fileName);
+	}
+
+	function getEntriesForScatter($moduleModel) {
+		$scatterColumnMap = $moduleModel->getFieldNamesForScatter();
+		if (empty($scatterColumnMap)) return array();
+
+		$bodyFieldName = $scatterColumnMap['comment-body'];
+		$fieldModel = $moduleModel->getField($bodyFieldName);
+		$tablename = $fieldModel->get('tablename');
+
+		foreach ($scatterColumnMap as $scatterColumn => $scatterField) {
+			$select[] = "{$scatterField} as {$scatterColumn} ";
+		}
+		$sql = "SELECT ";
+		$sql .= implode(", ", $select);
+		$sql .= " FROM ".$tablename;
+
+		$db = PearDatabase::getInstance();
+		$result = $db->pquery($sql, array());
+		while ($row = $db->fetchByAssoc($result)) {
+			$rows[] = $this->sanitizeValues($row);
+		}
+
+		return $rows;
 	}
 }

@@ -229,4 +229,14 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 
 		return $relatedListFields;
 	}
+
+	function getFieldNamesForScatter() {
+		$moduleName = $this->getName();
+		$entity = CRMEntity::getInstance($moduleName);
+		$indexName = $entity->table_index;
+
+		$scatterColumns = Vtiger_ExportData_Model::getScatterColumns();
+		$scatterFields = [$scatterColumns[0] => $indexName, $scatterColumns[1]=>'description'];
+		return $scatterFields;
+	}
 }

@@ -2067,4 +2067,9 @@ class Vtiger_Module_Model extends Vtiger_Module {
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		return $moduleModel->getModuleIcon();
 	}
+
+	function getFieldNamesForScatter() {
+		// 継承先で定義する
+		return array();
+	}
 }
