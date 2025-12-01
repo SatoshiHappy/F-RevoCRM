@@ -495,6 +495,16 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 					'linkurl' => 'javascript:Vtiger_List_Js.triggerExportAction("'.$this->getModule()->getExportUrl().'")',
 					'linkicon' => ''
 				);
+
+			$scatterFields = $moduleModel->getFieldNamesForScatter();
+			if(!empty($scatterFields)) {
+				$advancedLinks[] = array(
+					'linktype' => 'LISTVIEW',
+					'linklabel' => 'LBL_EXPORT_SCATTER',
+					'linkurl' => 'javascript:Vtiger_List_Js.triggerScatterExport("index.php?module='.$moduleModel->getName().'&action=ExportData&mode=exportCSVForScatter&source_module='.$moduleModel->getName().'")',
+					'linkicon' => ''
+				);
+			}
 		}
 
 		return $advancedLinks;

@@ -550,6 +550,7 @@ $languageStrings = array(
 	'LBL_EXPORT_DATA_IN_CURRENT_PAGE' => 'Export data in current page',
 	'LBL_EXPORT_SELECTED_RECORDS' => 'Export Selected Records',
 	'LBL_EXPORT_RECORDS' => 'Export Records',
+	'LBL_EXPORT_SCATTER' => 'Export Scatter CSV',
 	'LBL_NO_RECORD_SELECTED' => 'No record selected.',
 	'LBL_CAN_NOT_REMOVE_DEFAULT_WIDGET' => 'Cannot remove default widget',
 	'LBL_CUSTOM_VIEW_NAME_DUPLICATES_EXIST' => 'List already exists',

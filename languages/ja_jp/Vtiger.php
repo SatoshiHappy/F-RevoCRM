@@ -550,6 +550,7 @@ $languageStrings = array(
 	'LBL_EXPORT_DATA_IN_CURRENT_PAGE' => '現在のページをエクスポートする。',
 	'LBL_EXPORT_SELECTED_RECORDS' => '選択したデータをエクスポートする。',
 	'LBL_EXPORT_RECORDS' => 'エクスポート',
+	'LBL_EXPORT_SCATTER' => '散布図CSV出力',
 	'LBL_NO_RECORD_SELECTED' => 'データが選択されていません。',
 	'LBL_CAN_NOT_REMOVE_DEFAULT_WIDGET' => 'デフォルトのウィジェットは削除できません。',
 	'LBL_CUSTOM_VIEW_NAME_DUPLICATES_EXIST' => 'リストは既に存在しています。',

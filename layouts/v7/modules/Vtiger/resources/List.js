@@ -90,6 +90,39 @@ Vtiger.Class("Vtiger_List_Js", {
 		var listInstance = window.app.controller();
 		listInstance.performExportAction(exportActionUrl);
 	},
+	triggerScatterExport: function (exportActionUrl) {
+		var iframeName = 'scatterExportIframe';
+		var iframe = jQuery('#' + iframeName);
+		if (!iframe.length) {
+			iframe = jQuery('<iframe/>', {name: iframeName, id: iframeName, style: 'display:none;'});
+			jQuery('body').append(iframe);
+		}
+
+		var baseUrl = exportActionUrl.split('?')[0] || exportActionUrl;
+		var params = app.convertUrlToDataParams(exportActionUrl);
+
+		if (typeof csrfMagicName !== 'undefined' && typeof csrfMagicToken !== 'undefined') {
+			params[csrfMagicName] = csrfMagicToken;
+		}
+
+		var form = jQuery('<form/>', {
+			method: 'post',
+			action: baseUrl,
+			target: iframeName,
+			style: 'display:none;'
+		});
+
+		jQuery.each(params, function (name, value) {
+			if (typeof value === 'object') {
+				value = JSON.stringify(value);
+			}
+			form.append(jQuery('<input/>', {type: 'hidden', name: name, value: value}));
+		});
+
+		jQuery('body').append(form);
+		form.submit();
+		setTimeout(function () { form.remove(); }, 5000);
+	},
 	triggerPDFExportAction: function (exportActionUrl) {
 		var listInstance = window.app.controller();
 		listInstance.performPDFExportAction(exportActionUrl);

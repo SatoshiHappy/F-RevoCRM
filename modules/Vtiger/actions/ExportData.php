@@ -299,11 +299,14 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 	 * @param <Array> $headers - output file header
 	 * @param <Array> $entries - outfput file data
 	 */
-	function output($request, $headers, $entries) {
+	function output($request, $headers, $entries, $customFileName = null) {
 		$moduleName = $request->get('source_module');
-		$fileName = str_replace(' ','_',decode_html(vtranslate($moduleName, $moduleName)));
-		// for content disposition header comma should not be there in filename 
-		$fileName = str_replace(',', '_', $fileName);
+		$fileName = $customFileName;
+		if (empty($fileName)) {
+			$fileName = str_replace(' ','_',decode_html(vtranslate($moduleName, $moduleName)));
+			// for content disposition header comma should not be there in filename 
+			$fileName = str_replace(',', '_', $fileName);
+		}
 		$exportType = $this->getExportContentType($request);
 
 		if(!empty($headers)){ // 最初のバッチ処理で実行
