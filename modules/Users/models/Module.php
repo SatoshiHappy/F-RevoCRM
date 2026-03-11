@@ -430,4 +430,15 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		}
 		return $importableFieldModels;
 	}
+
+	public static function getIdsByUserName($userName) {
+		global $adb;
+
+		$result = $adb->pquery("SELECT id FROM vtiger_users WHERE userlabel = ?", array(trim($userName)));
+		$userIds = array();
+		for ($i = 0; $i < $adb->num_rows($result); $i++) {
+			$userIds[] = $adb->query_result($result, $i, 'id');
+		}
+		return $userIds;
+	}
 }
