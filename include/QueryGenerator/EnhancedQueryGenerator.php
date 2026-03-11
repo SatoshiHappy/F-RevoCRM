@@ -636,15 +636,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			$fieldGlue = '';
 
 			// Users関連フィールド、かつ、完全一致(e)/不一致(n)の場合、氏名をIDに変換する
-			$isReferenceField = in_array($baseFieldName, $this->referenceFieldList);
-			$isUsersModule = $isReferenceField && in_array('Users', $this->referenceFieldInfoList[$baseFieldName]);
-			$isExactMatchOperator = in_array($conditionInfo['operator'], array('e', 'n'));
-
-			if ($isUsersModule && $isExactMatchOperator) {
-				$convertedValue = $this->convertUserNamesToIds($conditionInfo['value']);
-			} else {
-				$convertedValue = $conditionInfo['value'];
-			}
+			$convertedValue = $this->convertUserNamesToIds($conditionInfo, $baseFieldName);
 
 			$valueSqlList = $this->getConditionValue($convertedValue, $conditionInfo['operator'], $field);
 			$operator = strtolower($conditionInfo['operator']);
@@ -705,8 +697,14 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$fieldSql .= "$fieldGlue $trim($columnSql) IS NULL OR $tableName.$columnName $valueSql OR $tableName.$columnName = '0'";
 						$fieldGlue = ' OR';
 					} else if ($conditionInfo['operator'] == 'k' || $conditionInfo['operator'] == 'n') {
-						$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql OR $trim($columnSql) IS NULL )";
-						$fieldGlue = 'OR';
+						if($valueSql === "<> ''"){
+							//空ではない の条件の場合、NULLは含めない
+							$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql)";
+						}else{
+							$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql OR $trim($columnSql) IS NULL )";
+						}
+						// 'n'（等しくない）と'k'（含まない）の場合はANDで結合
+						$fieldGlue = ' AND';
 					} else{
 						$fieldSql .= "$fieldGlue $trim($columnSql) $valueSql";
 						$fieldGlue = ' OR';
@@ -889,10 +887,18 @@ class EnhancedQueryGenerator extends QueryGenerator {
 	/**
 	 * ユーザー氏名をIDに変換する
 	 * 氏名のままだとWHERE句でuserlabelの文字列比較になり遅いため、IDに変換してインデックスを活用する
-	 * @param mixed $value 条件値（カンマ区切り文字列、配列、または単一値）
+	 * @param array $conditionInfo 条件情報
+	 * @param string $baseFieldName フィールド名
 	 * @return mixed 変換後の値（カンマ区切りID文字列）または元の値
 	 */
-	private function convertUserNamesToIds($value) {
+	private function convertUserNamesToIds($conditionInfo, $baseFieldName) {
+		$isReferenceField = in_array($baseFieldName, $this->referenceFieldList);
+		$isUsersModule = $isReferenceField && in_array('Users', $this->referenceFieldInfoList[$baseFieldName]);
+		$isExactMatchOperator = in_array($conditionInfo['operator'], array('e', 'n'));
+
+		$value = $conditionInfo['value'];
+		if (!($isUsersModule && $isExactMatchOperator)) return $value;
+
 		// 条件値をカンマ区切りで配列化（複数ユーザー指定に対応）
 		if (is_string($value)) {
 			$valueArray = explode(',', $value);
